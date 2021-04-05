@@ -77,3 +77,10 @@ Jenkins の Web アプリからジョブ実行用の slave ノードを追加す
 | ユーザー名                     | jenkins                                            |
 | 秘密鍵                         | (jenkins_home/.ssh/id_rsa の内容を貼り付ける)      |
 | Host Key Verification Strategy | Non verifying Verification Strategy                |
+| 高度な設定 -> Java のパス      | /usr/local/openjdk-8/bin/java                      |
+
+# 参考
+
+[https://qiita.com/michi-michi/items/b1835d6e89856643b65a](https://qiita.com/michi-michi/items/b1835d6e89856643b65a)
+
+[https://qiita.com/_ainosh_/items/04992adbab8502e2ed9e](https://qiita.com/_ainosh_/items/04992adbab8502e2ed9e)
