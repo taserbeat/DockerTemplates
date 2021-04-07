@@ -31,6 +31,8 @@ Docker Swarm を使って、複数ホストに複数コンテナを制御する�
 
 # 実行
 
+**Service を作成する**
+
 ```bash
 # 複数ホストの起動
 cd SwarmTutorial
@@ -57,4 +59,23 @@ docker push localhost:5000/taserbeat/echo:latest
 # workerがregistryからDockerイメージをpullできるか確認する
 docker exec -it worker01 docker pull registry:5000/taserbeat/echo:latest
 docker exec -it worker01 docker images
+
+# "echo"という名前のServiceを作る
+docker exec -it manager docker service create --replicas 1 --publish 8000:8080 --name echo registry:5000/taserbeat/echo:latest
+
+# Serviceが作られたことを確認する
+docker exec -it manager docker service ls
+
+# Serviceのコンテナの数を増やす (スケールアウトする)
+docker exec -it manager docker service scale echo=6
+
+# Serviceがスケールアウトしたことを確認する (REPLICASが増えている)
+docker exec -it manager docker service ls
+
+# Swarmクラスタで実行されているコンテナを確認する
+# NODEの項目を見ると、Swarmクラスタのノードに分散していることがわかる
+docker exec -it manager docker service ps echo
+
+# デプロイしたServiceを削除する
+docker exec -it manager docker service rm echo
 ```
