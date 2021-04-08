@@ -31,7 +31,7 @@ Docker Swarm を使って、複数ホストに複数コンテナを制御する�
 
 # 実行
 
-**Service を作成する**
+### Service を１つ作成する
 
 ```bash
 # 複数ホストの起動
@@ -78,4 +78,62 @@ docker exec -it manager docker service ps echo
 
 # デプロイしたServiceを削除する
 docker exec -it manager docker service rm echo
+
+# ホスト上に残っているファイルを削除 (任意)
+rm -r registry-data/
+```
+
+### Stack を作成する
+
+```bash
+# 複数ホストの起動
+cd SwarmTutorial
+docker-compose up -d
+
+# managerでswarm initを実行してSwarmモードにする (このときswarm joinのトークンが表示されるので控えておく)
+docker exec -it manager docker swarm init
+
+# 各workerを登録する
+docker exec -it worker01 docker swarm join --token {SWMTKN-1-...} manager:2377
+docker exec -it worker02 docker swarm join --token {SWMTKN-1-...} manager:2377
+docker exec -it worker03 docker swarm join --token {SWMTKN-1-...} manager:2377
+
+# ノードを確認する (master × 1 と worker × 3 が確認できる)
+docker exec -it manager docker node ls
+
+# レジストリにpushするDockerイメージのビルドとタグ付けを行う
+docker build -t taserbeat/echo:latest ../SimpleServer
+docker tag taserbeat/echo:latest localhost:5000/taserbeat/echo:latest
+
+# registryコンテナにイメージをpushする
+docker push localhost:5000/taserbeat/echo:latest
+
+# workerがregistryからDockerイメージをpullできるか確認する
+docker exec -it worker01 docker pull registry:5000/taserbeat/echo:latest
+docker exec -it worker01 docker images
+
+# クライアントと宛先のServiceを同一のoverlayネットワークに所属させるために
+# overlayネットワークを作成しておく
+docker exec -it manager docker network create --driver=overlay --attachable ch03
+
+# Stackをデプロイする
+docker exec -it manager docker stack deploy -c /stack/ch03-webapi.yml echo
+
+# デプロイされたStackを確認する (デプロイ後、レプリカが反映されるまで数分待つ必要あり)
+docker exec -it manager docker stack services echo
+
+# Stackでデプロイされたコンテナを確認する
+docker exec -it manager docker stack ps echo
+
+# visualizerで配置されているコンテナを可視化する
+docker exec -it manager docker stack deploy -c /stack/visualizer.yml visualizer
+
+# ブラウザでアクセスする
+# http://localhost:9000
+
+# Stackの削除 (echoを削除)
+docker exec -it manager docker stack rm echo
+
+# ServiceにSwarmクラスタ外からアクセスする
+#
 ```
