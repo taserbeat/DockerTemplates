@@ -128,12 +128,29 @@ docker exec -it manager docker stack ps echo
 # visualizerで配置されているコンテナを可視化する
 docker exec -it manager docker stack deploy -c /stack/visualizer.yml visualizer
 
-# ブラウザでアクセスする
+# ブラウザでvisualizerにアクセスする
 # http://localhost:9000
 
 # Stackの削除 (echoを削除)
 docker exec -it manager docker stack rm echo
 
 # ServiceにSwarmクラスタ外からアクセスする
-#
+# HAProxyを利用してSwarmクラスタ外 (大元のホスト)からechoサービスにアクセスできるようにする
+
+# まずはecho Stackをデプロイする
+docker exec -it manager docker stack deploy -c /stack/ch03-webapi.yml echo
+
+# ingress(HAProxyを含んでいる) Stackをデプロイする
+docker exec -it manager docker stack deploy -c /stack/ch03-ingress.yml ingress
+
+# 起動中のServiceを確認する
+docker exec -it manager docker service ls
+
+# ブラウザからHAProxy経由でecho_nginxにアクセスする
+# http://localhost:8000
+
+# 後片付け
+docker exec -it manager docker stack rm echo ingress visualizer
+docker-compose down --rmi all
+rm -r registry-data/
 ```
