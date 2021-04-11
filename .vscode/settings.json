@@ -16,4 +16,7 @@
         },
         "editor.defaultFormatter": "redhat.vscode-yaml",
     },
+    "[dockercompose]": {
+        "editor.tabSize": 2,
+    }
 }
