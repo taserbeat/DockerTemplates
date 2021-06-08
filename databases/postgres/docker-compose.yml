@@ -1,0 +1,34 @@
+version: "3"
+services:
+  postgres:
+    build:
+      context: ./
+    container_name: postgres
+    ports:
+      - 15432:5432
+    restart: always
+    # 公式イメージはデフォルトでログを出力しない。ログを出力させるには次のコメントアウトを外す。
+    # command: 'postgres -c port="5432" -c log_statement=all -c log_destination=stderr -c log_connections=on -c log_disconnections=on -c logging_collector=on -c log_filename=postgresql.log'
+    volumes:
+      - ./initdb:/docker-entrypoint-initdb.d
+    user: root
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=postgres
+      - TZ=Asia/Tokyo
+      - LANG=ja_JP.utf8
+  # postgresのGUIクライアント
+  # https://qiita.com/hiro9/items/e6e41ec822a7077c3568
+  pgweb:
+    image: sosedoff/pgweb
+    container_name: pgweb
+    ports:
+      - 8081:8081
+    environment:
+      # postgres://{USER}:{PASSWORD}@{HOST}:{PORT}/{DB_NAME}?sslmode={MODE}
+      - DATABASE_URL=postgres://root:postgres@postgres:5432/test_db?sslmode=disable
+    links:
+      - postgres:postgres
+    restart: always
+    depends_on:
+      - postgres
