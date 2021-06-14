@@ -65,6 +65,8 @@ Docker Swarm を使って実用的な構成の TODO アプリを作る。
 
 # 実行
 
+## 事前準備
+
 ```bash
 # 複数ホストの起動
 cd SwarmTodoApp
@@ -85,6 +87,22 @@ docker-compose exec manager docker node ls
 # オーバーレイネットワークを構築することで、Dockerホストを問わずに配置されているコンテナがあたかも同一NW上に存在するように扱える
 docker-compose exec manager docker network create --driver=overlay --attachable todoapp
 
-# 後片付け
-
 ```
+
+## Swarm で MySQL のスタックを構築する
+
+```bash
+# ホスト上でMySQLのDockerイメージ(masterとslaveを兼用)をビルドし、registryにプッシュする
+cd tododb
+docker build -t ch04/tododb:latest .
+docker image tag ch04/tododb:latest localhost:5000/ch04/tododb:latest
+docker push localhost:5000/ch04/tododb:latest
+
+# Swarm上でMySQLのMaster/Slaveサービスを実行する
+docker-compose exec manager docker stack deploy -c /stack/todo-mysql.yml todo_mysql
+docker-compose exec manager docker service ls
+```
+
+この時点で Swarm クラスターは以下のようになっている。
+
+![MySQLスタックのデプロイ時](./images/mysqlスタックデプロイ時.png)
