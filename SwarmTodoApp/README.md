@@ -106,3 +106,29 @@ docker-compose exec manager docker service ls
 この時点で Swarm クラスターは以下のようになっている。
 
 ![MySQLスタックのデプロイ時](./images/mysqlスタックデプロイ時.png)
+
+## MySQL コンテナに初期データを投入する
+
+```bash
+# (確認用)masterコンテナがSwarmのどのノードに配置されているか確認する
+docker-compose exec manager docker service ps todo_mysql_master --no-trunc --filter "desired-state=running"
+
+# masterのコンテナに入るための情報(コマンドを出力する)
+docker-compose exec manager docker service ps todo_mysql_master --no-trunc --filter "desired-state=running" --format "docker exec -it {{.Node}} docker exec -it {{.Name}}.{{.ID}} init-data.sh"
+>> docker exec -it cda9d8549491 docker exec -it todo_mysql_master.1.va5e3ac7ojcgxari0vvre5jcn init-data.sh
+
+# 上記の出力されたコマンドを実行し、masterで初期データを投入(init-data.sh)する
+docker exec -it cda9d8549491 docker exec -it todo_mysql_master.1.va5e3ac7ojcgxari0vvre5jcn init-data.sh
+
+# masterにデータが登録されているか確認する
+docker exec -it cda9d8549491 docker exec -it todo_mysql_master.1.va5e3ac7ojcgxari0vvre5jcn mysql -u gihyo -pgihyo tododb
+mysql> SELECT * FROM todo LIMIT 1;
+mysql> exit
+
+# slaveにもデータが反映されているか確認する
+docker-compose exec manager docker service ps todo_mysql_slave --no-trunc --filter "desired-state=running" --format "docker exec -it {{.Node}} docker exec -it {{.Name}}.{{.ID}} mysql -u gihyo -pgihyo tododb"
+
+docker exec -it 855397bfcf0c docker exec -it todo_mysql_slave.1.c2gx04w6se8sx5czz6p2ivpvx mysql -u gihyo -pgihyo tododb
+mysql> SELECT * FROM todo LIMIT 1;
+mysql> exit
+```
