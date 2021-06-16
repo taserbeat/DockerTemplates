@@ -132,3 +132,22 @@ docker exec -it 855397bfcf0c docker exec -it todo_mysql_slave.1.c2gx04w6se8sx5cz
 mysql> SELECT * FROM todo LIMIT 1;
 mysql> exit
 ```
+
+## API Service の構築
+
+```bash
+# API Serviceのイメージをビルドする
+cd SwarmTodoApp/todoapi
+docker build -t ch04/todoapi:latest .
+
+# イメージをregistryにpushする
+docker image tag ch04/todoapi:latest localhost:5000/ch04/todoapi:latest
+docker push localhost:5000/ch04/todoapi:latest
+
+# todo_appというStack名でスタックをデプロイする
+docker-compose exec manager docker stack deploy -c /stack/todo-app.yml todo_app
+
+# API Serviceがリクエストを受け付ける(Listen)状態であるか確認する
+docker-compose exec manager docker service logs -f todo_app_api
+> ctrl + c
+```
