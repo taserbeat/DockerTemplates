@@ -164,3 +164,20 @@ docker push localhost:5000/ch04/nginx:latest
 # バックエンドへプロキシするNginxのスタックを更新
 docker exec -it manager docker stack deploy -c /stack/todo-app.yml todo_app
 ```
+
+## Web アプリケーションの構築
+
+```bash
+# Webアプリのイメージをビルドし、registryにpush
+docker build -t ch04/todoweb:latest .
+docker tag ch04/todoweb:latest localhost:5000/ch04/todoweb:latest
+docker push localhost:5000/ch04/todoweb:latest
+
+# todonginxのDockerfile-nginxのイメージをpushする
+docker build -f Dockerfile-nuxt -t ch04/nginx-nuxt:latest .
+docker tag ch04/nginx-nuxt:latest localhost:5000/ch04/nginx-nuxt:latest
+docker push localhost:5000/ch04/nginx-nuxt:latest
+
+# フロントエンドのStackをデプロイする
+docker exec -it manager docker stack deploy -c /stack/todo-frontend.yml todo_frontend
+```
