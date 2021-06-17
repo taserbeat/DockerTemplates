@@ -151,3 +151,16 @@ docker-compose exec manager docker stack deploy -c /stack/todo-app.yml todo_app
 docker-compose exec manager docker service logs -f todo_app_api
 > ctrl + c
 ```
+
+## バックエンドへの Nginx プロキシ の構築
+
+```bash
+# Dockerイメージをビルドしてregistryにpushする
+cd SwarmTodoApp/todonginx
+docker build -t ch04/nginx:latest .
+docker tag ch04/nginx:latest localhost:5000/ch04/nginx:latest
+docker push localhost:5000/ch04/nginx:latest
+
+# バックエンドへプロキシするNginxのスタックを更新
+docker exec -it manager docker stack deploy -c /stack/todo-app.yml todo_app
+```
