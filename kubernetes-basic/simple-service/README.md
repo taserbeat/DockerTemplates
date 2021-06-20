@@ -74,6 +74,12 @@ kubectl logs -f echo-spring-cvmlx -c echo
 2021/06/20 12:41:58 start server
 ```
 
+# リソースの削除
+
+```bash
+kubectl delete -f simple-service.yml && kubectl delete -f simple-replicaset-with-label.yml
+```
+
 # Service の名前解決について
 
 Kubernetes クラスタ内の DNS では、Service を`Service名.Namespace名.svc.local`で名前解決できる。
