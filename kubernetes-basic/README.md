@@ -69,3 +69,8 @@ Kubernetes では Pod という単位でコンテナを一括りにしてデプ�
 (デプロイするコンテナが 1 つだけの場合でも Pod という単位でデプロイされる。)
 
 ![Podとコンテナの関係.png](./images/Podとコンテナの関係.png)
+
+# Kubernetes のチュートリアル
+
+- [simple-pod](./simple-pod)  
+   nginx-proxy と echo アプリケーション ([SwarmTutorial](../SwarmTutorial)と同じ)を Kubernetes にデプロイする
