@@ -70,6 +70,7 @@ Docker Swarm を使って実用的な構成の TODO アプリを作る。
 ```bash
 # 複数ホストの起動
 cd SwarmTodoApp
+# docker-compose down --rmi all --volumes
 docker-compose up -d
 
 # managerでswarm initを実行してSwarmモードにする (このときswarm joinのトークンが表示されるので控えておく)
@@ -81,12 +82,11 @@ docker exec -it worker02 docker swarm join --token {SWMTKN-1-...} manager:2377
 docker exec -it worker03 docker swarm join --token {SWMTKN-1-...} manager:2377
 
 # ノードを確認する (master × 1 と worker × 3 が確認できる)
-docker-compose exec manager docker node ls
+docker exec -it manager docker node ls
 
 # あらかじめ専用のオーバーレイネットワークを構築する
 # オーバーレイネットワークを構築することで、Dockerホストを問わずに配置されているコンテナがあたかも同一NW上に存在するように扱える
-docker-compose exec manager docker network create --driver=overlay --attachable todoapp
-
+docker exec -it manager docker network create --driver=overlay --attachable todoapp
 ```
 
 ## Swarm で MySQL のスタックを構築する
@@ -99,8 +99,8 @@ docker image tag ch04/tododb:latest localhost:5000/ch04/tododb:latest
 docker push localhost:5000/ch04/tododb:latest
 
 # Swarm上でMySQLのMaster/Slaveサービスを実行する
-docker-compose exec manager docker stack deploy -c /stack/todo-mysql.yml todo_mysql
-docker-compose exec manager docker service ls
+docker exec -it manager docker stack deploy -c /stack/todo-mysql.yml todo_mysql
+docker exec -it manager docker service ls
 ```
 
 この時点で Swarm クラスターは以下のようになっている。
@@ -111,10 +111,10 @@ docker-compose exec manager docker service ls
 
 ```bash
 # (確認用)masterコンテナがSwarmのどのノードに配置されているか確認する
-docker-compose exec manager docker service ps todo_mysql_master --no-trunc --filter "desired-state=running"
+docker exec -it manager docker service ps todo_mysql_master --no-trunc --filter "desired-state=running"
 
 # masterのコンテナに入るための情報(コマンドを出力する)
-docker-compose exec manager docker service ps todo_mysql_master --no-trunc --filter "desired-state=running" --format "docker exec -it {{.Node}} docker exec -it {{.Name}}.{{.ID}} init-data.sh"
+docker exec -it manager docker service ps todo_mysql_master --no-trunc --filter "desired-state=running" --format "docker exec -it {{.Node}} docker exec -it {{.Name}}.{{.ID}} init-data.sh"
 >> docker exec -it cda9d8549491 docker exec -it todo_mysql_master.1.va5e3ac7ojcgxari0vvre5jcn init-data.sh
 
 # 上記の出力されたコマンドを実行し、masterで初期データを投入(init-data.sh)する
@@ -126,14 +126,14 @@ mysql> SELECT * FROM todo LIMIT 1;
 mysql> exit
 
 # slaveにもデータが反映されているか確認する
-docker-compose exec manager docker service ps todo_mysql_slave --no-trunc --filter "desired-state=running" --format "docker exec -it {{.Node}} docker exec -it {{.Name}}.{{.ID}} mysql -u gihyo -pgihyo tododb"
+docker exec -it manager docker service ps todo_mysql_slave --no-trunc --filter "desired-state=running" --format "docker exec -it {{.Node}} docker exec -it {{.Name}}.{{.ID}} mysql -u gihyo -pgihyo tododb"
 
 docker exec -it 855397bfcf0c docker exec -it todo_mysql_slave.1.c2gx04w6se8sx5czz6p2ivpvx mysql -u gihyo -pgihyo tododb
 mysql> SELECT * FROM todo LIMIT 1;
 mysql> exit
 ```
 
-## API Service の構築
+## API Service の構築 (イメージのビルド)
 
 ```bash
 # API Serviceのイメージをビルドする
@@ -143,16 +143,9 @@ docker build -t ch04/todoapi:latest .
 # イメージをregistryにpushする
 docker image tag ch04/todoapi:latest localhost:5000/ch04/todoapi:latest
 docker push localhost:5000/ch04/todoapi:latest
-
-# todo_appというStack名でスタックをデプロイする
-docker-compose exec manager docker stack deploy -c /stack/todo-app.yml todo_app
-
-# API Serviceがリクエストを受け付ける(Listen)状態であるか確認する
-docker-compose exec manager docker service logs -f todo_app_api
-> ctrl + c
 ```
 
-## バックエンドへの Nginx プロキシ の構築
+## API Service と API Service への Nginx プロキシ の構築
 
 ```bash
 # Dockerイメージをビルドしてregistryにpushする
@@ -161,23 +154,41 @@ docker build -t ch04/nginx:latest .
 docker tag ch04/nginx:latest localhost:5000/ch04/nginx:latest
 docker push localhost:5000/ch04/nginx:latest
 
-# バックエンドへプロキシするNginxのスタックを更新
+# todo_appというStack名でスタックをデプロイする
 docker exec -it manager docker stack deploy -c /stack/todo-app.yml todo_app
+docker exec -it manager docker service ls
+
+# API Serviceがリクエストを受け付ける(Listen)状態であるか確認する
+docker exec -it manager docker service logs -f todo_app_api
+> ctrl + c
 ```
 
 ## Web アプリケーションの構築
 
 ```bash
 # Webアプリのイメージをビルドし、registryにpush
+cd SwarmTodoApp/todoweb
 docker build -t ch04/todoweb:latest .
 docker tag ch04/todoweb:latest localhost:5000/ch04/todoweb:latest
 docker push localhost:5000/ch04/todoweb:latest
 
 # todonginxのDockerfile-nginxのイメージをpushする
+cd ../todonginx
 docker build -f Dockerfile-nuxt -t ch04/nginx-nuxt:latest .
 docker tag ch04/nginx-nuxt:latest localhost:5000/ch04/nginx-nuxt:latest
 docker push localhost:5000/ch04/nginx-nuxt:latest
 
 # フロントエンドのStackをデプロイする
 docker exec -it manager docker stack deploy -c /stack/todo-frontend.yml todo_frontend
+docker exec -it manager docker service ls
 ```
+
+## Ingress で Swarm の外に公開する
+
+```bash
+# todo-ingress.ymlをmanagerコンテナでデプロイする
+docker exec -it manager docker stack deploy -c /stack/todo-ingress.yml todo_ingress
+docker exec -it manager docker service ls
+```
+
+##

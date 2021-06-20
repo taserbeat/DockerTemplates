@@ -1,7 +1,7 @@
 version: "3"
 services:
   nginx:
-    image: registory:5000/ch04/nginx-nuxt:latest
+    image: registry:5000/ch04/nginx-nuxt:latest
     deploy:
       replicas: 2
       placement:

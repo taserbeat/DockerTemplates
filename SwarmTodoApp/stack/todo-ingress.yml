@@ -4,7 +4,7 @@ services:
   haproxy:
     image: dockercloud/haproxy
     networks:
-      - ch03
+      - todoapp
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     deploy:
@@ -17,5 +17,5 @@ services:
       - 1936:1936 # for stats page(basicauth.stats:stats)
 
 networks:
-  ch03:
+  todoapp:
     external: true
