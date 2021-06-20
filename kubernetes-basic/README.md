@@ -74,3 +74,6 @@ Kubernetes では Pod という単位でコンテナを一括りにしてデプ�
 
 - [simple-pod](./simple-pod)  
    nginx-proxy と echo アプリケーション ([SwarmTutorial](../SwarmTutorial)と同じ)を Kubernetes にデプロイする
+
+- [simple-replicaset](./simple-replicaset)  
+  複数の Pod を 1 つのマニフェストファイルで構成するサンプル
