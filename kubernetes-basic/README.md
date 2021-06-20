@@ -81,3 +81,6 @@ Kubernetes では Pod という単位でコンテナを一括りにしてデプ�
 - [simple-deployment](./simple-deployment)  
   Deployment は ReplicaSet を管理・操作するためのリソースである。  
   その Deployment のサンプルとなる。
+
+- [simple-service](./simple-service)
+  Pod の集合(主に ReplicaSet)に対する経路やサービスディスカバリを提供する Service のサンプルである。
