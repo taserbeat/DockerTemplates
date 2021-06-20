@@ -191,4 +191,40 @@ docker exec -it manager docker stack deploy -c /stack/todo-ingress.yml todo_ingr
 docker exec -it manager docker service ls
 ```
 
-##
+## アクセス (動作未確認)
+
+- curl で Web アプリケーションにアクセス
+
+以下のように、レスポンスヘッダーに XPoweredBy:Express が付いているので
+nginx から Node.js を経由してレスポンスを返していることがわかる。
+
+```bash
+curl -I http://localhost:8000/
+
+HTTP/1.1 200 OK
+Server: nginx/1.13.12
+Date: Sun,27 May 2018 12:26:01 GMT
+ContentType: text/html;charset=utf8
+ContentLength: 19403
+XPoweredBy: Express
+ETag: "4bcbWHCvI+kKJIz6ikNHNPLTZcInfHg"
+Vary: AcceptEncoding
+```
+
+- curl で静的ファイルにアクセス
+
+静的ファイルを curl で取得する際に X-Powered-By ヘッダーがあれば Node.js に到達しているが、
+以下のようにそうなってはいないため Nginx が直接レスポンスを返していることがわかる。
+
+```bash
+curl -I http://localhost:8000/_nuxt/app.84213ab389afece29614.js
+
+HTTP/1.1 200 OK
+Server:nginx/1.13.12
+Date: Sun,27May201812:25:38GMT
+ContentType: application/javascript;charset=utf8
+ContentLength: 27272
+LastModified: Sun,27May 2018 11:38:00 GMT
+ETag: "5b0a98986a88"
+AcceptRanges: bytes
+```
