@@ -228,3 +228,17 @@ LastModified: Sun,27May 2018 11:38:00 GMT
 ETag: "5b0a98986a88"
 AcceptRanges: bytes
 ```
+
+# リソースを全て削除
+
+```bash
+cd SwarmToDoApp
+# composeで作成したリソースをすべて削除
+docker-compose down --rmi all --volumes --remove-orphans
+
+# 今回buildしたイメージをすべて削除
+docker images -a | grep "localhost:5000/ch04/" | awk '{print $3}' | xargs docker rmi
+
+# 未使用のvolumeを削除
+docker volume prune
+```
