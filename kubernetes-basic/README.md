@@ -84,3 +84,7 @@ Kubernetes では Pod という単位でコンテナを一括りにしてデプ�
 
 - [simple-service](./simple-service)
   Pod の集合(主に ReplicaSet)に対する経路やサービスディスカバリを提供する Service のサンプルである。
+
+- [ingress](./ingress)
+  NodePort は Kubernetes クラスタ外に Service を公開するすることが可能だが、それは L4 層レベルのルーティングとなる。
+  HTTP/HTTPS のようにパスベースで転送先を切り替えるという L7 層のルーティングは Ingress を使用することで実現でき、これがそのサンプルである。
