@@ -98,3 +98,13 @@ redmine-1624773566      default         1               2021-06-27 14:59:29.6035
 ```bash
 kubectl get service,deployment --selector release=redmine-1624773566
 ```
+
+# Chart でアプリケーションをアンインストールする
+
+Chart を亜人ストールするには、次のようにリリース名を指定する。
+
+```bash
+helm delete redmine-1624773566
+
+# release "redmine-1624773566" uninstalled
+```
