@@ -75,3 +75,26 @@ Helm リポジトリは種類がいくつか存在する。
 ```bash
 helm search repo stable
 ```
+
+# Chart をインストールする
+
+例として、プロジェクト管理ツールである Redmine の Chart をインストールしてみる。
+このときユーザー名やパスワードをカスタムのものにするために`redmine.yaml`を用意しておく。
+
+```bash
+helm install -f redmine.yaml stable/redmine --generate-name
+```
+
+http://localhost にアクセスすると Redmine を利用することができる。  
+また、次のようにリリースの一覧を取得できる。
+
+```bash
+helm ls
+
+NAME                    NAMESPACE       REVISION        UPDATED                                 STATUS          CHART           APP VERSION
+redmine-1624773566      default         1               2021-06-27 14:59:29.603558 +0900 JST    deployed        redmine-14.1.12 4.1.0
+```
+
+```bash
+kubectl get service,deployment --selector release=redmine-1624773566
+```
